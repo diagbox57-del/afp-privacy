@@ -182,7 +182,7 @@
     <ul>
       <li><strong>Code source propriétaire</strong> : l'application est développée intégralement par l'éditeur en React Native / Expo. Elle <strong>n'est pas issue d'un template tiers</strong>, d'un générateur d'apps ni d'un service de « repackaging ». Le code n'est partagé avec aucune autre application publiée sur l'App Store ou le Play Store.</li>
       <li><strong>Backend propriétaire</strong> : base de données, politiques de sécurité (RLS) et fonctions edge spécifiquement écrites pour AFP Garage, hébergées sur Supabase (Francfort, UE).</li>
-      <li><strong>Fonctionnalités distinctives</strong> : carnet d'entretien multi-véhicules, rappels personnalisés par catégorie d'entretien (vidange, freinage, distribution, contrôle technique…), intervalles configurables <strong>à la fois en kilomètres et en mois</strong>, notifications <strong>strictement locales</strong> (pas de serveur push distant), et <strong>OCR de factures</strong> via l'API Claude d'Anthropic pour pré-remplir automatiquement les entrées.</li>
+      <li><strong>Fonctionnalités distinctives</strong> : carnet d'entretien multi-véhicules, rappels personnalisés par catégorie d'entretien (vidange, freinage, distribution, contrôle technique…), intervalles configurables <strong>à la fois en kilomètres et en mois</strong>, notifications <strong>strictement locales</strong> (pas de serveur push distant), <strong>OCR de factures</strong> via l'API Claude d'Anthropic pour pré-remplir automatiquement les entrées, et <strong>« Mode Pro »</strong> permettant à l'utilisateur de partager temporairement et de façon contrôlée l'historique d'entretien d'un véhicule avec un professionnel de l'automobile de son choix (voir section 4.5).</li>
       <li><strong>Compte développeur unique</strong> : l'application est publiée sous un seul compte Apple Developer et un seul compte Google Play, détenus personnellement par Nordine Boumezaar. Aucune application similaire n'est publiée sur d'autres comptes.</li>
       <li><strong>Identité commerciale vérifiable</strong> : adresse postale physique en France (voir section 1), site web professionnel <a href="https://autofranceperformance.fr" target="_blank" rel="noopener">autofranceperformance.fr</a>, contact direct par e-mail.</li>
     </ul>
@@ -274,6 +274,7 @@
         <tr><td>Notifications locales de rappel</td><td>Dates / km d'échéance</td><td>Intérêt légitime (art. 6.1.f) — vous prévenir d'un entretien à venir, désactivable dans les réglages OS</td></tr>
         <tr><td>Reconnaissance optique de caractères (OCR) sur factures</td><td>Photo de facture transmise temporairement</td><td>Intérêt légitime (art. 6.1.f) — fonctionnalité de confort, déclenchée uniquement à votre demande explicite</td></tr>
         <tr><td>Sécurité du service (anti-fraude, protection des comptes)</td><td>Données de session</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
+        <tr><td>Partage temporaire de l'historique avec un professionnel (« Mode Pro »)</td><td>Fiche du véhicule sélectionné et entrées d'entretien associées</td><td><strong>Consentement explicite</strong> (art. 6.1.a) — déclenché par vous, révocable à tout moment</td></tr>
       </tbody>
     </table>
     <p>Aucune donnée n'est utilisée à des fins de prospection commerciale, de profilage, de publicité ciblée ni de revente.</p>
@@ -310,6 +311,43 @@
     <h3>4.4 Service Expo Push — non utilisé</h3>
     <p>Pour mémoire, l'application <strong>n'utilise pas</strong> le service Expo Push Notifications. Aucune notification distante n'est envoyée. Toutes les notifications sont planifiées localement par le système d'exploitation.</p>
 
+    <h3>4.5 Partage avec un professionnel de l'automobile (« Mode Pro »)</h3>
+    <p>AFP Garage permet à l'utilisateur de <strong>partager temporairement et de façon strictement contrôlée</strong> l'historique d'entretien d'<em>un seul</em> de ses véhicules avec un professionnel de l'automobile de son choix (garage, mécanicien indépendant, contrôleur technique, expert automobile, acheteur potentiel lors d'une revente, etc.).</p>
+
+    <p><strong>Ce partage n'a lieu qu'à votre initiative explicite</strong>, à partir de l'écran du véhicule concerné, via l'option « Partager avec un pro ». La base légale est donc votre <strong>consentement</strong> au sens de l'article 6.1.a du RGPD.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:18px 0 6px;">Fonctionnement</h4>
+    <ol>
+      <li>Vous sélectionnez le véhicule pour lequel vous souhaitez ouvrir un accès.</li>
+      <li>L'application génère un <strong>lien sécurisé à usage limité</strong> ainsi qu'un <strong>code PIN à 6 chiffres</strong>, valables <strong>24 heures maximum</strong>.</li>
+      <li>Vous transmettez ce lien et ce code au professionnel (en main propre, par SMS, par e-mail, etc.).</li>
+      <li>Le professionnel peut alors, depuis son propre appareil :
+        <ul>
+          <li><strong>Consulter en lecture seule</strong> : la fiche du véhicule (marque, modèle, année, plaque, VIN, kilométrage, photos), l'historique complet des entretiens passés et les rappels à venir.</li>
+          <li><strong>Ajouter</strong> une nouvelle entrée d'entretien (date, type, kilométrage, coût, notes, photo de la facture).</li>
+        </ul>
+      </li>
+      <li>Chaque entrée ajoutée par un professionnel est <strong>signée et horodatée</strong>, avec mention du nom déclaré du professionnel, et <strong>ne peut plus être modifiée ni supprimée</strong> par lui après validation (intégrité du carnet).</li>
+      <li>Vous recevez une <strong>notification</strong> à chaque action effectuée par le professionnel.</li>
+    </ol>
+
+    <h4 style="font-size:15px;color:var(--white);margin:18px 0 6px;">Périmètre et limites</h4>
+    <ul>
+      <li>Le partage porte <strong>uniquement sur le véhicule sélectionné</strong>. Le professionnel n'a <strong>aucun accès</strong> à vos autres véhicules, à votre profil utilisateur, à votre adresse e-mail de compte, ni à aucun autre véhicule partagé par d'autres utilisateurs.</li>
+      <li>Les permissions sont en <strong>ajout uniquement</strong> (« append-only ») : le professionnel ne peut ni modifier, ni supprimer les entrées préexistantes.</li>
+      <li>Le partage expire <strong>automatiquement au bout de 24 heures</strong>. Aucune reconduction n'a lieu sans une nouvelle action explicite de votre part.</li>
+      <li>Vous pouvez <strong>révoquer l'accès à tout moment</strong>, avant son expiration, depuis la fiche du véhicule (bouton « Révoquer l'accès Pro »). La révocation est effective immédiatement.</li>
+    </ul>
+
+    <h4 style="font-size:15px;color:var(--white);margin:18px 0 6px;">Statut du professionnel au regard du RGPD</h4>
+    <p>Lorsqu'il accède à votre historique via le Mode Pro, le professionnel <strong>n'est pas un sous-traitant</strong> d'Auto France Performance / DBX 57 : il devient lui-même un <strong>responsable de traitement autonome</strong> pour les usages qu'il fait des données (par exemple, conservation dans son propre logiciel de gestion d'atelier, facturation, traçabilité réglementaire). Il lui appartient de respecter ses propres obligations RGPD vis-à-vis de vous. Nous vous recommandons de ne partager votre historique qu'avec des professionnels en qui vous avez confiance.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:18px 0 6px;">Journal d'audit</h4>
+    <p>Pour votre sécurité et votre traçabilité, chaque accès et chaque action effectués via le Mode Pro sont <strong>journalisés</strong> : date et heure de l'ouverture du lien, nom déclaré du professionnel, type d'action (consultation, ajout d'entrée), entrée concernée. Vous pouvez consulter ce journal à tout moment depuis la fiche du véhicule, rubrique « Historique des accès Pro ». Les journaux d'audit sont conservés <strong>tant que le véhicule existe dans votre compte</strong> et sont supprimés en même temps que lui.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:18px 0 6px;">Localisation des données</h4>
+    <p>Les liens de partage, les codes PIN, les permissions et les journaux d'audit sont stockés dans la base Supabase hébergée à <strong>Francfort (Allemagne, UE)</strong>, dans les mêmes conditions de sécurité que le reste de vos données (chiffrement TLS, chiffrement au repos, Row Level Security strictes garantissant que chaque lien de partage ne donne accès qu'au véhicule concerné).</p>
+
     <h2>5. Durée de conservation des données</h2>
     <ul>
       <li><strong>Données de votre compte et données associées</strong> (profil, véhicules, entretiens, rappels, photos) : conservées <strong>tant que votre compte est actif</strong>, c'est-à-dire jusqu'à ce que vous demandiez la suppression de votre compte.</li>
@@ -317,6 +355,7 @@
       <li><strong>Sauvegardes Supabase :</strong> les sauvegardes automatiques de la base de données peuvent contenir une copie résiduelle pendant <strong>un maximum de 7 jours</strong> après la suppression, le temps que les sauvegardes glissantes soient renouvelées. Passé ce délai, plus aucune copie n'existe.</li>
       <li><strong>Jetons de session :</strong> conservés localement sur votre appareil tant que vous restez connecté ; supprimés dès que vous vous déconnectez.</li>
       <li><strong>Images envoyées à l'OCR :</strong> non conservées par Anthropic. L'image originale reste dans votre stockage Supabase aussi longtemps que l'entrée d'entretien associée existe.</li>
+      <li><strong>Liens de partage « Mode Pro » :</strong> automatiquement invalidés <strong>24 heures</strong> après leur création, ou immédiatement si vous les révoquez. Les journaux d'audit associés sont conservés tant que le véhicule existe dans votre compte (voir section 4.5).</li>
     </ul>
 
     <h2>6. Vos droits</h2>
@@ -342,6 +381,7 @@
       <li><strong>Effacement partiel :</strong> vous pouvez supprimer un véhicule, une entrée d'entretien, un rappel ou une photo individuellement.</li>
       <li><strong>Déconnexion :</strong> depuis les réglages, ce qui efface les jetons de session de votre appareil.</li>
       <li><strong>Notifications :</strong> désactivables à tout moment dans les réglages système iOS / Android.</li>
+      <li><strong>Révocation d'un accès « Mode Pro »</strong> : depuis la fiche du véhicule concerné, vous pouvez révoquer à tout moment un lien de partage actif. La révocation prend effet immédiatement et est journalisée (voir section 4.5).</li>
     </ul>
 
     <h3>7.2 Pour la suppression complète du compte</h3>
@@ -411,6 +451,7 @@
         <tr><td>Sont-elles vendues ou partagées ?</td><td><strong>Non</strong>, jamais</td></tr>
         <tr><td>Y a-t-il de la pub ou des analytics ?</td><td><strong>Non</strong>, aucun</td></tr>
         <tr><td>Mes photos de factures partent-elles à un tiers ?</td><td>Uniquement si <strong>vous</strong> déclenchez l'OCR : envoyées à l'API Claude (Anthropic, USA), non conservées par eux</td></tr>
+        <tr><td>Mon garagiste peut-il accéder à mon carnet ?</td><td>Uniquement si <strong>vous</strong> ouvrez un accès « Mode Pro » : lecture + ajout, sur 1 seul véhicule, pendant 24 h max, révocable à tout moment</td></tr>
         <tr><td>Comment supprimer mon compte ?</td><td>Email à <a href="mailto:nbautodiag@gmail.com">nbautodiag@gmail.com</a></td></tr>
         <tr><td>À qui me plaindre ?</td><td>À nous d'abord, puis à la CNIL</td></tr>
       </tbody>
