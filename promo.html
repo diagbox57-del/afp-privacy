@@ -658,6 +658,56 @@
     body.playing .letterbox.top { transform: translateY(0); }
     body.playing .letterbox.bottom { transform: translateY(0); }
 
+    /* Subtitles overlay */
+    .subtitle {
+      position: fixed;
+      left: 50%;
+      bottom: 100px;
+      transform: translateX(-50%) translateY(20px);
+      z-index: 60;
+      padding: 12px 28px;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(6px);
+      border-radius: 6px;
+      color: var(--white);
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-align: center;
+      max-width: 80vw;
+      line-height: 1.3;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      border-left: 3px solid var(--cyan);
+      border-right: 3px solid var(--cyan);
+    }
+    .subtitle.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .subtitle .accent {
+      color: var(--cyan-bright);
+    }
+    @media (max-width: 700px) {
+      .subtitle { font-size: 18px; padding: 10px 20px; bottom: 90px; }
+    }
+
+    /* Voiceover toggle button */
+    .vo-toggle {
+      background: transparent !important;
+      color: var(--text-soft) !important;
+      border: 1px solid var(--border) !important;
+      font-size: 12px !important;
+      padding: 6px 12px !important;
+    }
+    .vo-toggle.on {
+      background: var(--cyan) !important;
+      color: var(--navy) !important;
+      border-color: var(--cyan) !important;
+    }
+
     /* Scan line / film grain */
     .grain {
       position: fixed;
@@ -819,14 +869,18 @@
 
     <div class="letterbox top"></div>
     <div class="letterbox bottom"></div>
+
+    <!-- Subtitles overlay -->
+    <div class="subtitle" id="subtitle"></div>
   </div>
 
-  <div class="fullscreen-hint">Appuyez sur <strong>F</strong> pour le mode plein écran</div>
+  <div class="fullscreen-hint">Appuyez sur <strong>F</strong> pour le mode plein écran · <strong>S</strong> pour les sous-titres</div>
 
   <div class="controls">
     <button id="playBtn">▶ Lancer</button>
+    <button id="voBtn" class="vo-toggle on">CC</button>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-    <span id="timeLabel">0.0s / 33.0s</span>
+    <span id="timeLabel">0.0s / 34.0s</span>
   </div>
 
   <script>
@@ -853,13 +907,37 @@
     ];
     const TOTAL = 34;
 
+    // Subtitle cues — synchronized with voiceover script
+    // Each cue: [start, end, text (HTML allowed for <span class="accent">)]
+    const SUBTITLES = [
+      [0.6, 2.4,  'AFP Garage'],
+      [2.6, 5.0,  'Le carnet d\'entretien<br/>signé <span class="accent">Auto France Performance</span>'],
+      [5.5, 7.5,  'La dernière vidange…<br/>c\'était quand ?'],
+      [7.7, 9.5,  'Le contrôle technique<br/>expire bientôt ?'],
+      [9.7, 11.0, 'Combien j\'ai dépensé<br/>cette année ?'],
+      [11.5, 14.3, 'Tout votre garage…<br/><span class="accent">dans votre poche.</span>'],
+      [14.6, 18.0, 'Chaque véhicule, chaque entretien,<br/>chaque rappel — au même endroit.'],
+      [18.5, 20.2, '<span class="accent">Carnet d\'entretien</span> complet.'],
+      [20.4, 21.8, '<span class="accent">Rappels</span> automatiques.'],
+      [22.0, 23.4, '<span class="accent">OCR</span> sur vos factures.'],
+      [23.6, 25.0, '<span class="accent">Multi-véhicules</span> illimité.'],
+      [25.5, 27.7, 'Vos données restent <span class="accent">en Europe.</span>'],
+      [27.9, 30.0, 'Pas de pub. Pas d\'analytics.<br/><span class="accent">100% RGPD.</span>'],
+      [30.5, 32.0, 'Reprenez le contrôle<br/>de <span class="accent">votre garage.</span>'],
+      [32.2, 34.0, 'App Store · Google Play'],
+    ];
+
     const playBtn = document.getElementById('playBtn');
+    const voBtn = document.getElementById('voBtn');
     const progressBar = document.getElementById('progressBar');
     const timeLabel = document.getElementById('timeLabel');
+    const subtitleEl = document.getElementById('subtitle');
     let startTime = null;
     let rafId = null;
     let playing = false;
     let currentScene = -1;
+    let subtitlesEnabled = true;
+    let currentCue = -1;
 
     function reset() {
       document.querySelectorAll('.scene').forEach(s => {
@@ -867,9 +945,36 @@
       });
       document.querySelectorAll('.q-line').forEach(q => q.classList.remove('show'));
       document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('show'));
+      subtitleEl.classList.remove('show');
+      subtitleEl.innerHTML = '';
       currentScene = -1;
+      currentCue = -1;
       progressBar.style.width = '0%';
       timeLabel.textContent = '0.0s / ' + TOTAL.toFixed(1) + 's';
+    }
+
+    function updateSubtitle(t) {
+      if (!subtitlesEnabled) {
+        subtitleEl.classList.remove('show');
+        return;
+      }
+      let foundIdx = -1;
+      for (let i = 0; i < SUBTITLES.length; i++) {
+        const [start, end] = SUBTITLES[i];
+        if (t >= start && t <= end) { foundIdx = i; break; }
+      }
+      if (foundIdx === -1) {
+        if (currentCue !== -1) {
+          subtitleEl.classList.remove('show');
+          currentCue = -1;
+        }
+        return;
+      }
+      if (foundIdx !== currentCue) {
+        subtitleEl.innerHTML = SUBTITLES[foundIdx][2];
+        subtitleEl.classList.add('show');
+        currentCue = foundIdx;
+      }
     }
 
     function activateScene(idx, t) {
@@ -932,6 +1037,10 @@
           break;
         }
       }
+
+      // Update subtitles
+      updateSubtitle(t);
+
       rafId = requestAnimationFrame(tick);
     }
 
@@ -949,6 +1058,15 @@
       play();
     });
 
+    voBtn.addEventListener('click', () => {
+      subtitlesEnabled = !subtitlesEnabled;
+      voBtn.classList.toggle('on', subtitlesEnabled);
+      if (!subtitlesEnabled) {
+        subtitleEl.classList.remove('show');
+        currentCue = -1;
+      }
+    });
+
     // Fullscreen toggle
     document.addEventListener('keydown', (e) => {
       if (e.key.toLowerCase() === 'f') {
@@ -957,6 +1075,9 @@
         } else {
           document.exitFullscreen();
         }
+      }
+      if (e.key.toLowerCase() === 's') {
+        voBtn.click();
       }
       if (e.key === ' ') {
         e.preventDefault();
