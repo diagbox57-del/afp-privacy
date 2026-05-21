@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AFP Garage — Promo 9:16</title>
+  <style>
+    :root {
+      --bg: #06122A;
+      --bg-deep: #030814;
+      --navy: #0A1B3D;
+      --card: #13284F;
+      --border: #22407A;
+      --cyan: #22D3EE;
+      --cyan-bright: #67E8F9;
+      --cyan-glow: rgba(34, 211, 238, 0.6);
+      --blue: #3B82F6;
+      --white: #FFFFFF;
+      --text-bright: #F1F5F9;
+      --text-soft: #CBD5E1;
+      --text-dim: #94A3B8;
+      --red: #EF4444;
+      --green: #22C55E;
+      --amber: #F59E0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--text-bright);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* 9:16 canvas — locks to 1080×1920 logical units, scaled responsively */
+    .canvas {
+      position: relative;
+      width: min(100vh * 9 / 16, 100vw);
+      height: min(100vh, 100vw * 16 / 9);
+      background: radial-gradient(ellipse at center, var(--navy) 0%, var(--bg-deep) 75%);
+      overflow: hidden;
+      /* Reference 1080x1920 → use cqi for in-canvas sizing */
+      container-type: inline-size;
+    }
+    /* Use container query units (cqi/cqb) so everything scales with the 9:16 frame */
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(34, 211, 238, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.08) 1px, transparent 1px);
+      background-size: 8cqi 8cqi;
+      transform: perspective(80cqi) rotateX(60deg) translateY(20%);
+      transform-origin: center bottom;
+      animation: gridMove 8s linear infinite;
+      opacity: 0.4;
+    }
+    @keyframes gridMove {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 8cqi; }
+    }
+
+    .particle {
+      position: absolute;
+      width: 0.4cqi;
+      height: 0.4cqi;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 1.2cqi var(--cyan-glow);
+      opacity: 0;
+      animation: floatUp 6s linear infinite;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(110%) scale(0.5); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10%) scale(1); opacity: 0; }
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8cqi;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease-in-out;
+    }
+    .scene.active { opacity: 1; pointer-events: auto; }
+
+    /* ===== SCENE 1 — LOGO ===== */
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4cqi;
+    }
+    .logo-ring {
+      position: relative;
+      width: 32cqi;
+      height: 32cqi;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #60A5FA, #1E40AF 60%, #0A1B3D 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 12cqi var(--cyan-glow),
+        0 0 24cqi rgba(34, 211, 238, 0.3),
+        inset 0 0 6cqi rgba(0, 0, 0, 0.5);
+    }
+    .logo-ring::before {
+      content: '';
+      position: absolute;
+      inset: -1.5cqi;
+      border-radius: 50%;
+      border: 0.4cqi solid var(--cyan);
+      opacity: 0.4;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .logo-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4cqi;
+      border-radius: 50%;
+      border: 0.2cqi solid var(--cyan);
+      opacity: 0.2;
+      animation: pulse 2.4s ease-in-out infinite 0.6s;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.12); opacity: 0; }
+    }
+    .logo-text {
+      font-size: 10cqi;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 0.8cqi;
+      text-shadow: 0 0.8cqi 4cqi rgba(34, 211, 238, 0.5);
+    }
+    .brand-title {
+      font-size: 11cqi;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.2cqi;
+      text-align: center;
+    }
+    .brand-sub {
+      font-size: 3.6cqi;
+      color: var(--cyan-bright);
+      letter-spacing: 1.2cqi;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* ===== SCENE 2 — PROBLEM ===== */
+    .problem-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4cqi;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .q-line {
+      font-size: 7cqi;
+      font-weight: 700;
+      color: var(--white);
+      opacity: 0;
+      transform: translateX(-6cqi);
+      display: flex;
+      align-items: flex-start;
+      gap: 3cqi;
+      line-height: 1.2;
+    }
+    .q-line .q-mark {
+      color: var(--red);
+      font-size: 8cqi;
+      filter: drop-shadow(0 0 2cqi rgba(239, 68, 68, 0.5));
+      flex-shrink: 0;
+    }
+    .q-line.show {
+      opacity: 1;
+      transform: translateX(0);
+      transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ===== SCENE 3 — SOLUTION (PHONE) ===== */
+    .scene.s3 { justify-content: space-between; gap: 4cqi; padding-top: 12cqi; padding-bottom: 12cqi; }
+    .phone-headline {
+      font-size: 8cqi;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      text-align: center;
+    }
+    .phone-headline .accent {
+      color: var(--cyan-bright);
+      text-shadow: 0 0 4cqi var(--cyan-glow);
+    }
+    .phone {
+      width: 50cqi;
+      height: 100cqi;
+      border-radius: 8cqi;
+      background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
+      padding: 2cqi;
+      box-shadow:
+        0 6cqi 16cqi rgba(0, 0, 0, 0.6),
+        0 0 0 0.4cqi #2a2a3e,
+        0 0 12cqi rgba(34, 211, 238, 0.25);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 2cqi;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18cqi;
+      height: 4.5cqi;
+      background: #000;
+      border-radius: 0 0 3cqi 3cqi;
+      z-index: 10;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 6cqi;
+      background: var(--navy);
+      overflow: hidden;
+      position: relative;
+    }
+    .app-header {
+      padding: 8cqi 3cqi 2.5cqi;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .app-title { font-size: 2.6cqi; font-weight: 700; color: var(--white); }
+    .app-avatar {
+      width: 5cqi; height: 5cqi; border-radius: 50%;
+      background: linear-gradient(135deg, #60A5FA, #2563EB);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8cqi; font-weight: 700; color: var(--white);
+    }
+    .vehicle-list { padding: 2.5cqi; display: flex; flex-direction: column; gap: 2cqi; }
+    .vehicle-card {
+      background: var(--card);
+      border-radius: 2.2cqi;
+      padding: 2.2cqi;
+      border: 1px solid var(--border);
+      display: flex;
+      gap: 2cqi;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(3cqi);
+    }
+    .vehicle-icon {
+      width: 7cqi; height: 7cqi; border-radius: 1.6cqi;
+      background: linear-gradient(135deg, #3B82F6, #1E40AF);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.2cqi; flex-shrink: 0;
+    }
+    .vehicle-info { flex: 1; min-width: 0; }
+    .vehicle-name { font-size: 2.4cqi; font-weight: 700; color: var(--white); margin-bottom: 0.3cqi; }
+    .vehicle-meta { font-size: 1.8cqi; color: var(--text-dim); }
+    .vehicle-badge { font-size: 1.6cqi; padding: 0.5cqi 1.4cqi; border-radius: 1.2cqi; font-weight: 600; }
+    .badge-ok { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+    /* ===== SCENE 4 — FEATURES ===== */
+    .features-title {
+      font-size: 7.5cqi;
+      font-weight: 800;
+      color: var(--white);
+      text-align: center;
+      margin-bottom: 6cqi;
+      line-height: 1.15;
+    }
+    .features-title .accent { color: var(--cyan-bright); }
+    .feature-grid-vertical {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3cqi;
+      width: 100%;
+    }
+    .feature-card {
+      background: linear-gradient(145deg, var(--card), var(--navy));
+      border: 1px solid var(--border);
+      border-radius: 3cqi;
+      padding: 4cqi 3cqi;
+      display: flex;
+      flex-direction: column;
+      gap: 2cqi;
+      opacity: 0;
+      transform: translateY(5cqi) scale(0.95);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 0.3cqi;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+    }
+    .feature-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-card.show::before { opacity: 1; transition: opacity 0.4s 0.4s; }
+    .feature-icon {
+      width: 9cqi; height: 9cqi; border-radius: 2.4cqi;
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4.5cqi;
+    }
+    .feature-name { font-size: 3.3cqi; font-weight: 700; color: var(--white); }
+    .feature-desc { font-size: 2.4cqi; color: var(--text-soft); line-height: 1.4; }
+
+    /* ===== SCENE 5 — TRUST ===== */
+    .shield {
+      width: 28cqi;
+      height: 32cqi;
+      filter: drop-shadow(0 0 6cqi var(--cyan-glow));
+      margin-bottom: 4cqi;
+    }
+    .shield svg { width: 100%; height: 100%; }
+    .trust-headline {
+      font-size: 7.5cqi;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.2;
+      text-align: center;
+      margin-bottom: 5cqi;
+    }
+    .trust-headline .accent { color: var(--cyan-bright); }
+    .trust-points {
+      display: flex;
+      flex-direction: column;
+      gap: 3cqi;
+      align-items: flex-start;
+    }
+    .trust-point {
+      display: flex;
+      align-items: center;
+      gap: 2.5cqi;
+      font-size: 4cqi;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+    .check {
+      width: 6cqi; height: 6cqi; border-radius: 50%;
+      background: var(--cyan); color: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 3.4cqi;
+      box-shadow: 0 0 2.5cqi var(--cyan-glow);
+      flex-shrink: 0;
+    }
+
+    /* ===== SCENE 6 — CTA ===== */
+    .cta-logo {
+      width: 22cqi; height: 22cqi; border-radius: 50%;
+      background: linear-gradient(135deg, #60A5FA, #2563EB);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6cqi; font-weight: 900; color: var(--white);
+      box-shadow: 0 0 12cqi var(--cyan-glow);
+      letter-spacing: 0.5cqi;
+      margin-bottom: 4cqi;
+    }
+    .cta-headline {
+      font-size: 9cqi;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.05;
+      letter-spacing: -0.3cqi;
+      text-align: center;
+      margin-bottom: 3cqi;
+    }
+    .cta-headline .accent {
+      background: linear-gradient(135deg, var(--cyan-bright), var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .cta-sub {
+      font-size: 3.6cqi;
+      color: var(--text-soft);
+      text-align: center;
+      margin-bottom: 5cqi;
+    }
+    .stores {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5cqi;
+      width: 100%;
+      align-items: center;
+    }
+    .store-btn {
+      display: flex;
+      align-items: center;
+      gap: 2.5cqi;
+      padding: 3cqi 5cqi;
+      border-radius: 2.5cqi;
+      background: var(--white);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 3.4cqi;
+      box-shadow: 0 1.5cqi 5cqi rgba(0, 0, 0, 0.4);
+      min-width: 60cqi;
+    }
+    .store-btn .store-icon { font-size: 5cqi; }
+    .store-btn .store-text small { display: block; font-size: 2cqi; font-weight: 500; color: #555; }
+    .website {
+      margin-top: 4cqi;
+      color: var(--cyan-bright);
+      font-size: 3.2cqi;
+      font-weight: 600;
+      letter-spacing: 0.3cqi;
+    }
+
+    /* ===== SCENE ANIMATIONS ===== */
+    .scene.s1.play .logo-ring { animation: logoIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s1.play .brand-title { animation: textIn 0.8s 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s1.play .brand-sub { animation: textIn 0.8s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes logoIn {
+      from { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+      to { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    @keyframes textIn {
+      from { opacity: 0; transform: translateY(3cqi); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scene.s3.play .phone-headline { animation: textIn 0.8s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s3.play .phone { animation: phoneIn 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s3.play .vehicle-card { animation: cardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s3.play .vehicle-card:nth-child(1) { animation-delay: 0.6s; }
+    .scene.s3.play .vehicle-card:nth-child(2) { animation-delay: 0.9s; }
+    .scene.s3.play .vehicle-card:nth-child(3) { animation-delay: 1.2s; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(3cqi); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes phoneIn {
+      from { opacity: 0; transform: translateY(6cqi); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scene.s5.play .shield { animation: shieldIn 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s5.play .trust-headline { animation: textIn 0.8s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s5.play .trust-points { animation: textIn 0.8s 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes shieldIn {
+      from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+      to { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    .scene.s6.play .cta-logo { animation: logoIn 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s6.play .cta-headline { animation: textIn 0.8s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s6.play .cta-sub { animation: textIn 0.8s 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s6.play .stores { animation: textIn 0.8s 1.0s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .scene.s6.play .website { animation: textIn 0.8s 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+    /* Cinematic letterboxing — thinner for vertical */
+    .letterbox {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 6cqi;
+      background: #000;
+      z-index: 50;
+      transform: translateY(-100%);
+      transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .letterbox.bottom { top: auto; bottom: 0; transform: translateY(100%); }
+    .letterbox.top { top: 0; }
+    body.playing .letterbox.top { transform: translateY(0); }
+    body.playing .letterbox.bottom { transform: translateY(0); }
+
+    /* Film grain */
+    .grain {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      z-index: 40;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+
+    /* Subtitles — positioned higher for vertical (above safe-zone for TikTok UI) */
+    .subtitle {
+      position: absolute;
+      left: 50%;
+      bottom: 22cqi;
+      transform: translateX(-50%) translateY(2cqi);
+      z-index: 60;
+      padding: 2cqi 3.5cqi;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(6px);
+      border-radius: 1.2cqi;
+      color: var(--white);
+      font-size: 4cqi;
+      font-weight: 700;
+      letter-spacing: 0.1cqi;
+      text-align: center;
+      max-width: 80cqi;
+      line-height: 1.3;
+      text-shadow: 0 0.3cqi 1cqi rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      border-left: 0.4cqi solid var(--cyan);
+      border-right: 0.4cqi solid var(--cyan);
+    }
+    .subtitle.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .subtitle .accent { color: var(--cyan-bright); }
+
+    /* Controls — outside canvas */
+    .controls {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(6, 18, 42, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 10px 18px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      z-index: 100;
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+    .controls button {
+      background: var(--cyan);
+      color: var(--navy);
+      border: none;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .vo-toggle {
+      background: transparent !important;
+      color: var(--text-soft) !important;
+      border: 1px solid var(--border) !important;
+      font-size: 12px !important;
+      padding: 6px 12px !important;
+    }
+    .vo-toggle.on {
+      background: var(--cyan) !important;
+      color: var(--navy) !important;
+      border-color: var(--cyan) !important;
+    }
+    .progress {
+      width: 160px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--cyan-bright));
+      transition: width 0.1s linear;
+    }
+    .hint {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim);
+      font-size: 12px;
+      background: rgba(6, 18, 42, 0.7);
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas" id="canvas">
+    <div class="grid"></div>
+    <div id="particles"></div>
+    <div class="grain"></div>
+
+    <div class="scene s1">
+      <div class="logo-wrap">
+        <div class="logo-ring"><div class="logo-text">AFP</div></div>
+        <div class="brand-title">AFP Garage</div>
+        <div class="brand-sub">Auto France Performance</div>
+      </div>
+    </div>
+
+    <div class="scene s2">
+      <div class="problem-stack">
+        <div class="q-line" id="q1"><span class="q-mark">?</span><span>La dernière vidange<br/>c'était quand</span></div>
+        <div class="q-line" id="q2"><span class="q-mark">?</span><span>Le contrôle technique<br/>expire quand</span></div>
+        <div class="q-line" id="q3"><span class="q-mark">?</span><span>Combien j'ai dépensé<br/>cette année</span></div>
+      </div>
+    </div>
+
+    <div class="scene s3">
+      <div class="phone-headline">Tout votre garage,<br/><span class="accent">dans votre poche.</span></div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-title">Mes véhicules</div>
+            <div class="app-avatar">NB</div>
+          </div>
+          <div class="vehicle-list">
+            <div class="vehicle-card">
+              <div class="vehicle-icon">🚗</div>
+              <div class="vehicle-info">
+                <div class="vehicle-name">Peugeot 308</div>
+                <div class="vehicle-meta">142 350 km · Diesel</div>
+              </div>
+              <div class="vehicle-badge badge-ok">À jour</div>
+            </div>
+            <div class="vehicle-card">
+              <div class="vehicle-icon">🏎️</div>
+              <div class="vehicle-info">
+                <div class="vehicle-name">Mégane RS</div>
+                <div class="vehicle-meta">68 200 km · Essence</div>
+              </div>
+              <div class="vehicle-badge badge-warn">Vidange</div>
+            </div>
+            <div class="vehicle-card">
+              <div class="vehicle-icon">🚙</div>
+              <div class="vehicle-info">
+                <div class="vehicle-name">Berlingo</div>
+                <div class="vehicle-meta">98 700 km · Diesel</div>
+              </div>
+              <div class="vehicle-badge badge-ok">À jour</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene s4">
+      <div class="features-title">Pensé pour vous<br/><span class="accent">simplifier la vie</span></div>
+      <div class="feature-grid-vertical">
+        <div class="feature-card" id="f1">
+          <div class="feature-icon">📒</div>
+          <div class="feature-name">Carnet</div>
+          <div class="feature-desc">Tout l'historique de chaque véhicule.</div>
+        </div>
+        <div class="feature-card" id="f2">
+          <div class="feature-icon">🔔</div>
+          <div class="feature-name">Rappels</div>
+          <div class="feature-desc">Notifications avant chaque échéance.</div>
+        </div>
+        <div class="feature-card" id="f3">
+          <div class="feature-icon">📸</div>
+          <div class="feature-name">OCR Factures</div>
+          <div class="feature-desc">L'IA remplit pour vous. Zéro saisie.</div>
+        </div>
+        <div class="feature-card" id="f4">
+          <div class="feature-icon">🚗</div>
+          <div class="feature-name">Multi-véhicules</div>
+          <div class="feature-desc">Toute votre flotte personnelle.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene s5">
+      <div class="shield">
+        <svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#67E8F9"/>
+              <stop offset="100%" stop-color="#3B82F6"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 5 L90 20 L90 55 C90 80 70 100 50 105 C30 100 10 80 10 55 L10 20 Z"
+                fill="url(#shieldGrad)" opacity="0.2" stroke="url(#shieldGrad)" stroke-width="2"/>
+          <path d="M32 55 L45 68 L70 40" stroke="#67E8F9" stroke-width="4" fill="none"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="trust-headline">Vos données restent<br/><span class="accent">vos données.</span></div>
+      <div class="trust-points">
+        <div class="trust-point"><div class="check">✓</div> 100% RGPD</div>
+        <div class="trust-point"><div class="check">✓</div> Hébergé en Europe</div>
+        <div class="trust-point"><div class="check">✓</div> Zéro publicité</div>
+        <div class="trust-point"><div class="check">✓</div> Zéro analytics</div>
+      </div>
+    </div>
+
+    <div class="scene s6">
+      <div class="cta-logo">AFP</div>
+      <div class="cta-headline">Reprenez<br/>le <span class="accent">contrôle.</span></div>
+      <div class="cta-sub">Téléchargez AFP Garage<br/>et oubliez le carnet papier.</div>
+      <div class="stores">
+        <div class="store-btn">
+          <div class="store-icon">🍎</div>
+          <div class="store-text"><small>Télécharger sur</small>App Store</div>
+        </div>
+        <div class="store-btn">
+          <div class="store-icon">▶</div>
+          <div class="store-text"><small>Disponible sur</small>Google Play</div>
+        </div>
+      </div>
+      <div class="website">autofranceperformance.fr</div>
+    </div>
+
+    <div class="letterbox top"></div>
+    <div class="letterbox bottom"></div>
+
+    <div class="subtitle" id="subtitle"></div>
+  </div>
+
+  <div class="hint">9:16 · Appuyez sur <strong>F</strong> plein écran · <strong>S</strong> sous-titres</div>
+
+  <div class="controls">
+    <button id="playBtn">▶ Lancer</button>
+    <button id="voBtn" class="vo-toggle on">CC</button>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <span id="timeLabel">0.0s / 34.0s</span>
+  </div>
+
+  <script>
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 35; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 6 + 's';
+      p.style.animationDuration = (4 + Math.random() * 4) + 's';
+      p.style.opacity = 0.3 + Math.random() * 0.5;
+      particlesContainer.appendChild(p);
+    }
+
+    const CLEAN = new URLSearchParams(location.search).has('clean');
+    if (CLEAN) {
+      document.querySelector('.controls').style.display = 'none';
+      document.querySelector('.hint').style.display = 'none';
+    }
+
+    const SCENES = [
+      { el: '.s1', start: 0, end: 5 },
+      { el: '.s2', start: 5, end: 11 },
+      { el: '.s3', start: 11, end: 18 },
+      { el: '.s4', start: 18, end: 25 },
+      { el: '.s5', start: 25, end: 30 },
+      { el: '.s6', start: 30, end: 34 },
+    ];
+    const TOTAL = 34;
+
+    const SUBTITLES = [
+      [0.6, 2.4,  'AFP Garage'],
+      [2.6, 5.0,  'Le carnet d\'entretien<br/><span class="accent">Auto France Performance</span>'],
+      [5.5, 7.5,  'La dernière vidange…<br/>c\'était quand ?'],
+      [7.7, 9.5,  'Le contrôle technique<br/>expire bientôt ?'],
+      [9.7, 11.0, 'Combien j\'ai dépensé<br/>cette année ?'],
+      [11.5, 14.3, 'Tout votre garage…<br/><span class="accent">dans votre poche.</span>'],
+      [14.6, 18.0, 'Chaque véhicule, chaque entretien,<br/>chaque rappel.'],
+      [18.5, 20.2, '<span class="accent">Carnet</span> complet.'],
+      [20.4, 21.8, '<span class="accent">Rappels</span> automatiques.'],
+      [22.0, 23.4, '<span class="accent">OCR</span> factures.'],
+      [23.6, 25.0, '<span class="accent">Multi-véhicules</span> illimité.'],
+      [25.5, 27.7, 'Vos données restent<br/><span class="accent">en Europe.</span>'],
+      [27.9, 30.0, 'Pas de pub. Pas d\'analytics.<br/><span class="accent">100% RGPD.</span>'],
+      [30.5, 32.0, 'Reprenez le contrôle<br/>de <span class="accent">votre garage.</span>'],
+      [32.2, 34.0, 'App Store · Google Play'],
+    ];
+
+    const playBtn = document.getElementById('playBtn');
+    const voBtn = document.getElementById('voBtn');
+    const progressBar = document.getElementById('progressBar');
+    const timeLabel = document.getElementById('timeLabel');
+    const subtitleEl = document.getElementById('subtitle');
+    let startTime = null;
+    let rafId = null;
+    let playing = false;
+    let currentScene = -1;
+    let subtitlesEnabled = true;
+    let currentCue = -1;
+
+    function reset() {
+      document.querySelectorAll('.scene').forEach(s => s.classList.remove('active', 'play'));
+      document.querySelectorAll('.q-line').forEach(q => q.classList.remove('show'));
+      document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('show'));
+      subtitleEl.classList.remove('show');
+      subtitleEl.innerHTML = '';
+      currentScene = -1;
+      currentCue = -1;
+      progressBar.style.width = '0%';
+      timeLabel.textContent = '0.0s / ' + TOTAL.toFixed(1) + 's';
+    }
+
+    function updateSubtitle(t) {
+      if (!subtitlesEnabled) {
+        subtitleEl.classList.remove('show');
+        return;
+      }
+      let foundIdx = -1;
+      for (let i = 0; i < SUBTITLES.length; i++) {
+        const [start, end] = SUBTITLES[i];
+        if (t >= start && t <= end) { foundIdx = i; break; }
+      }
+      if (foundIdx === -1) {
+        if (currentCue !== -1) {
+          subtitleEl.classList.remove('show');
+          currentCue = -1;
+        }
+        return;
+      }
+      if (foundIdx !== currentCue) {
+        subtitleEl.innerHTML = SUBTITLES[foundIdx][2];
+        subtitleEl.classList.add('show');
+        currentCue = foundIdx;
+      }
+    }
+
+    function activateScene(idx, t) {
+      document.querySelectorAll('.scene').forEach((s, i) => {
+        if (i !== idx) s.classList.remove('active', 'play');
+      });
+      const s = SCENES[idx];
+      const scene = document.querySelector(s.el);
+      if (!scene.classList.contains('active')) {
+        scene.classList.add('active', 'play');
+        if (idx === 1) document.querySelectorAll('.q-line').forEach(q => q.classList.remove('show'));
+        if (idx === 3) document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('show'));
+      }
+      if (idx === 1) {
+        const local = t - s.start;
+        if (local > 0.3) document.getElementById('q1').classList.add('show');
+        if (local > 1.6) document.getElementById('q2').classList.add('show');
+        if (local > 2.9) document.getElementById('q3').classList.add('show');
+      }
+      if (idx === 3) {
+        const local = t - s.start;
+        if (local > 0.4) document.getElementById('f1').classList.add('show');
+        if (local > 0.9) document.getElementById('f2').classList.add('show');
+        if (local > 1.4) document.getElementById('f3').classList.add('show');
+        if (local > 1.9) document.getElementById('f4').classList.add('show');
+      }
+    }
+
+    function tick(now) {
+      if (!startTime) startTime = now;
+      const t = (now - startTime) / 1000;
+      if (t >= TOTAL) {
+        progressBar.style.width = '100%';
+        timeLabel.textContent = TOTAL.toFixed(1) + 's / ' + TOTAL.toFixed(1) + 's';
+        playBtn.textContent = '↻ Rejouer';
+        playing = false;
+        return;
+      }
+      progressBar.style.width = (t / TOTAL * 100) + '%';
+      timeLabel.textContent = t.toFixed(1) + 's / ' + TOTAL.toFixed(1) + 's';
+      for (let i = 0; i < SCENES.length; i++) {
+        if (t >= SCENES[i].start && t < SCENES[i].end) {
+          if (i !== currentScene) currentScene = i;
+          activateScene(i, t);
+          break;
+        }
+      }
+      updateSubtitle(t);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function play() {
+      reset();
+      document.body.classList.add('playing');
+      playBtn.textContent = '⏸ En cours…';
+      startTime = null;
+      playing = true;
+      rafId = requestAnimationFrame(tick);
+    }
+
+    playBtn.addEventListener('click', () => { if (!playing) play(); });
+    voBtn.addEventListener('click', () => {
+      subtitlesEnabled = !subtitlesEnabled;
+      voBtn.classList.toggle('on', subtitlesEnabled);
+      if (!subtitlesEnabled) {
+        subtitleEl.classList.remove('show');
+        currentCue = -1;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'f') {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+      if (e.key.toLowerCase() === 's') voBtn.click();
+      if (e.key === ' ') { e.preventDefault(); if (!playing) play(); }
+    });
+
+    setTimeout(play, 400);
+  </script>
+</body>
+</html>

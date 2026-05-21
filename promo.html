@@ -896,6 +896,13 @@
       particlesContainer.appendChild(p);
     }
 
+    // Clean recording mode: ?clean=1 hides all UI for pristine screen captures
+    const CLEAN = new URLSearchParams(location.search).has('clean');
+    if (CLEAN) {
+      document.querySelector('.controls').style.display = 'none';
+      document.querySelector('.fullscreen-hint').style.display = 'none';
+    }
+
     // Scene timing (start, end) in seconds
     const SCENES = [
       { el: '.s1', start: 0, end: 5 },     // logo intro
